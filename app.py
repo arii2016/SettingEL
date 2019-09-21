@@ -13,6 +13,10 @@ def get_line(device):
         rx_buffer += chars
     return rx_buffer
 
+if len(sys.argv) < 2:
+    sys.stderr.write('引数を指定してください！\n')
+    sys.exit(1)
+
 
 # ポート番号を取得する##################################
 if sys.platform == "linux" or sys.platform == "linux2":
@@ -35,7 +39,11 @@ except:
 device.write(chr(0x13))
 
 # STAモード有効
-StrCommand = "P03," + "true" + "\n"
+if sys.argv[1] == "0":
+    StrCommand = "P03," + "false" + "\n"
+else:
+    StrCommand = "P03," + "true" + "\n"
+
 device.write(StrCommand)
 strRet = get_line(device)
 if strRet == "NG":
@@ -43,7 +51,10 @@ if strRet == "NG":
     sys.exit(1)
 
 # STAモードSSID
-StrCommand = "P04," + "aviato2.4G" + "\n"
+if sys.argv[1] == "0":
+    StrCommand = "P04," + "null" + "\n"
+else:
+    StrCommand = "P04," + "aviato2.4G" + "\n"
 device.write(StrCommand)
 strRet = get_line(device)
 if strRet == "NG":
@@ -51,7 +62,10 @@ if strRet == "NG":
     sys.exit(1)
 
 # STAモードパスワード
-StrCommand = "P05," + "aviato@1234$" + "\n"
+if sys.argv[1] == "0":
+    StrCommand = "P05," + "null" + "\n"
+else:
+    StrCommand = "P05," + "aviato@1234$" + "\n"
 device.write(StrCommand)
 strRet = get_line(device)
 if strRet == "NG":
