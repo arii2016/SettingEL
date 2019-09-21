@@ -3,6 +3,11 @@
 import sys, os, time
 import serial
 from serial.tools import list_ports
+import convert
+class Color:
+    RED       = '\033[1;31m'
+    GREEN     = '\033[1;32m'
+    END       = '\033[0m'
 
 def get_line(device):
     rx_buffer = ""
@@ -13,9 +18,155 @@ def get_line(device):
         rx_buffer += chars
     return rx_buffer
 
-if len(sys.argv) < 2:
-    sys.stderr.write('引数を指定してください！\n')
-    sys.exit(1)
+# STA設定
+def set_sta():
+    # COM接続
+    try:
+        device = serial.Serial(SERIAL_PORT, 921600, timeout=1, writeTimeout=20)
+    except:
+        sys.stderr.write('USBへの接続に失敗しました！\n')
+        return False
+
+    # コマンドモードに変更
+    device.write(chr(0x13))
+
+    # STAモード有効
+    StrCommand = "P03," + "true" + "\n"
+    device.write(StrCommand)
+    strRet = get_line(device)
+    if strRet == "NG":
+        sys.stderr.write('STAモード有効設定失敗\n')
+        return False
+
+    # STAモードSSID
+    StrCommand = "P04," + "aviato2.4G" + "\n"
+    device.write(StrCommand)
+    strRet = get_line(device)
+    if strRet == "NG":
+        sys.stderr.write('STAモードSSID設定失敗\n')
+        return False
+
+    # STAモードパスワード
+    StrCommand = "P05," + "aviato@1234$" + "\n"
+    device.write(StrCommand)
+    strRet = get_line(device)
+    if strRet == "NG":
+        sys.stderr.write('STAモードパスワード設定失敗\n')
+        return False
+
+    # Gコードモードに変更
+    device.write(chr(0x11))
+    device.close()
+
+    return True
+
+
+# STM書き込み
+def smt_write():
+    mot_path = "./data/EtcherGrbl_v1.0.5.mot"
+
+    # motファイルからデータ抽出
+    (addr, data, start_addr) = convert.analyze_mot_file(mot_path)
+    # データレコード再構成
+    (addr, data) = convert.reconstruct_records(addr, data)
+    # 書き込み予定領域のセクター番号を取得
+    sectors = convert.make_erase_page_list(addr, data)
+
+    # COM接続
+    try:
+        device = serial.Serial(SERIAL_PORT, 921600, timeout=1, writeTimeout=20)
+    except:
+        sys.stderr.write('USBへの接続に失敗しました！\n')
+        return False
+
+    # コマンドモードに変更
+    device.write(chr(0x13))
+
+    # セクタ数、データー数、バージョンを送付
+    StrCommand = "U01," + str(len(sectors)) + "," + str(len(addr)) + ",V110\n"
+    device.write(StrCommand)
+    # 戻り値確認
+    if get_line(device) == "NG":
+        sys.stderr.write('STM書き込みエラー1\n')
+        return False
+
+    # セクタ送付
+    for i in range(len(sectors)):
+        device.write(str(sectors[i]) + "\n")
+    # データー送付
+    for i in range(len(addr)):
+        StrCommand = str(addr[i]) + "," + str(len(data[i])) + "\n"
+        device.write(StrCommand)
+        device.write(data[i])
+    # 戻り値確認
+    if get_line(device) == "NG":
+        sys.stderr.write('STM書き込みエラー2\n')
+        return False
+
+    # ファーム書き込み実行
+    device.write("U02\n")
+    # 戻り値確認
+    if get_line(device) == "NG":
+        sys.stderr.write('STM書き込みエラー3\n')
+        return False
+
+    # Gコードモードに変更
+    device.write(chr(0x11))
+    device.close()
+    return True
+
+# ESP書き込み
+def esp_write():
+    bin_path = "./data/etcherlaser_v1.0.5.bin"
+
+    f = open(bin_path, mode='rb')
+    data = f.read()
+    f.close()
+
+    # COM接続
+    try:
+        device = serial.Serial(SERIAL_PORT, 921600, timeout=1, writeTimeout=20)
+    except:
+        sys.stderr.write('USBへの接続に失敗しました！\n')
+        return False
+
+    # コマンドモードに変更
+    device.write(chr(0x13))
+
+    # セクタ数、データー数、バージョンを送付
+    StrCommand = "U11," + str(len(data)) + "\n"
+    device.write(StrCommand)
+    # 戻り値確認
+    if get_line(device) == "NG":
+        sys.stderr.write('ESP書き込みエラー1\n')
+        return False
+
+    # データ送付
+    device.write(data)
+    if get_line(device) == "NG":
+        sys.stderr.write('ESP書き込みエラー2\n')
+        return False
+
+    # ファーム書き込み実行
+    device.write("U12\n")
+    # 戻り値確認
+    if get_line(device) == "NG":
+        sys.stderr.write('ESP書き込みエラー3\n')
+        return False
+
+    # Gコードモードに変更
+    device.write(chr(0x11))
+    device.close()
+    return True
+
+# 再起動
+def restart():
+    device = serial.Serial(SERIAL_PORT, 921600, timeout=1, writeTimeout=1)
+    # コマンドモードに変更
+    device.write(chr(0x13))
+
+    device.write("S01\n")
+    device.close()
 
 
 # ポート番号を取得する##################################
@@ -28,53 +179,26 @@ for match_tuple in matched_ports:
     break
 #####################################################
 
-# COM接続
-try:
-    device = serial.Serial(SERIAL_PORT, 921600, timeout=1, writeTimeout=20)
-except:
-    sys.stderr.write('USBへの接続に失敗しました！\n')
+# STA設定
+sys.stdout.write('STA設定\n')
+if set_sta() == False:
+    sys.stderr.write(Color.RED + "NG" + Color.END + "\n")
     sys.exit(1)
 
-# コマンドモードに変更
-device.write(chr(0x13))
-
-# STAモード有効
-if sys.argv[1] == "0":
-    StrCommand = "P03," + "false" + "\n"
-else:
-    StrCommand = "P03," + "true" + "\n"
-
-device.write(StrCommand)
-strRet = get_line(device)
-if strRet == "NG":
-    sys.stderr.write('STAモード有効設定失敗\n')
+# STMアップデート
+sys.stdout.write('STMアップデート\n')
+if smt_write() == False:
+    sys.stderr.write(Color.RED + "NG" + Color.END + "\n")
     sys.exit(1)
 
-# STAモードSSID
-if sys.argv[1] == "0":
-    StrCommand = "P04," + "null" + "\n"
-else:
-    StrCommand = "P04," + "aviato2.4G" + "\n"
-device.write(StrCommand)
-strRet = get_line(device)
-if strRet == "NG":
-    sys.stderr.write('STAモードSSID設定失敗\n')
+# ESPアップデート
+sys.stdout.write('ESPアップデート\n')
+if esp_write() == False:
+    sys.stderr.write(Color.RED + "NG" + Color.END + "\n")
     sys.exit(1)
 
-# STAモードパスワード
-if sys.argv[1] == "0":
-    StrCommand = "P05," + "null" + "\n"
-else:
-    StrCommand = "P05," + "aviato@1234$" + "\n"
-device.write(StrCommand)
-strRet = get_line(device)
-if strRet == "NG":
-    sys.stderr.write('TAモードパスワード設定失敗\n')
-    sys.exit(1)
+# 再起動
+restart()
 
-
-# Gコードモードに変更
-device.write(chr(0x11))
-device.close()
-
+sys.stdout.write(Color.GREEN + "OK" + Color.END + "\n")
 sys.exit(0)
