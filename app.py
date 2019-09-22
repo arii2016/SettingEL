@@ -170,10 +170,13 @@ def restart():
 
 
 # ポート番号を取得する##################################
-if sys.platform == "linux" or sys.platform == "linux2":
-    matched_ports = list_ports.grep("ttyUSB")
-elif sys.platform == "darwin":
-    matched_ports = list_ports.grep("cu.usbserial-")
+if os.name == 'nt':
+    matched_ports = list_ports.grep("USB Serial Port ")
+elif os.name == 'posix':
+    if sys.platform == "linux" or sys.platform == "linux2":
+        matched_ports = list_ports.grep("ttyUSB")
+    elif sys.platform == "darwin":
+        matched_ports = list_ports.grep("cu.usbserial-")
 for match_tuple in matched_ports:
     SERIAL_PORT = match_tuple[0]
     break
