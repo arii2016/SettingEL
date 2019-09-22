@@ -24,7 +24,7 @@ def set_sta():
     try:
         device = serial.Serial(SERIAL_PORT, 921600, timeout=1, writeTimeout=20)
     except:
-        sys.stderr.write('USBへの接続に失敗しました！\n')
+        sys.stderr.write('USB connect err\n')
         return False
 
     # コマンドモードに変更
@@ -35,7 +35,7 @@ def set_sta():
     device.write(StrCommand)
     strRet = get_line(device)
     if strRet == "NG":
-        sys.stderr.write('STAモード有効設定失敗\n')
+        sys.stderr.write('STA set enable err\n')
         return False
 
     # STAモードSSID
@@ -43,7 +43,7 @@ def set_sta():
     device.write(StrCommand)
     strRet = get_line(device)
     if strRet == "NG":
-        sys.stderr.write('STAモードSSID設定失敗\n')
+        sys.stderr.write('STA set ssid err\n')
         return False
 
     # STAモードパスワード
@@ -51,7 +51,7 @@ def set_sta():
     device.write(StrCommand)
     strRet = get_line(device)
     if strRet == "NG":
-        sys.stderr.write('STAモードパスワード設定失敗\n')
+        sys.stderr.write('STA set pw err\n')
         return False
 
     # Gコードモードに変更
@@ -76,7 +76,7 @@ def smt_write():
     try:
         device = serial.Serial(SERIAL_PORT, 921600, timeout=1, writeTimeout=20)
     except:
-        sys.stderr.write('USBへの接続に失敗しました！\n')
+        sys.stderr.write('USB connect err\n')
         return False
 
     # コマンドモードに変更
@@ -87,7 +87,7 @@ def smt_write():
     device.write(StrCommand)
     # 戻り値確認
     if get_line(device) == "NG":
-        sys.stderr.write('STM書き込みエラー1\n')
+        sys.stderr.write('STM write err 1\n')
         return False
 
     # セクタ送付
@@ -100,14 +100,14 @@ def smt_write():
         device.write(data[i])
     # 戻り値確認
     if get_line(device) == "NG":
-        sys.stderr.write('STM書き込みエラー2\n')
+        sys.stderr.write('STM write err 2\n')
         return False
 
     # ファーム書き込み実行
     device.write("U02\n")
     # 戻り値確認
     if get_line(device) == "NG":
-        sys.stderr.write('STM書き込みエラー3\n')
+        sys.stderr.write('STM write err 3\n')
         return False
 
     # Gコードモードに変更
@@ -127,7 +127,7 @@ def esp_write():
     try:
         device = serial.Serial(SERIAL_PORT, 921600, timeout=1, writeTimeout=20)
     except:
-        sys.stderr.write('USBへの接続に失敗しました！\n')
+        sys.stderr.write('USB connect err\n')
         return False
 
     # コマンドモードに変更
@@ -138,20 +138,20 @@ def esp_write():
     device.write(StrCommand)
     # 戻り値確認
     if get_line(device) == "NG":
-        sys.stderr.write('ESP書き込みエラー1\n')
+        sys.stderr.write('ESP write err 1\n')
         return False
 
     # データ送付
     device.write(data)
     if get_line(device) == "NG":
-        sys.stderr.write('ESP書き込みエラー2\n')
+        sys.stderr.write('ESP write err 2\n')
         return False
 
     # ファーム書き込み実行
     device.write("U12\n")
     # 戻り値確認
     if get_line(device) == "NG":
-        sys.stderr.write('ESP書き込みエラー3\n')
+        sys.stderr.write('ESP write err 3\n')
         return False
 
     # Gコードモードに変更
@@ -183,19 +183,19 @@ for match_tuple in matched_ports:
 #####################################################
 
 # STA設定
-sys.stdout.write('STA設定\n')
+sys.stdout.write('STA setting\n')
 if set_sta() == False:
     sys.stderr.write(Color.RED + "NG" + Color.END + "\n")
     sys.exit(1)
 
 # STMアップデート
-sys.stdout.write('STMアップデート\n')
+sys.stdout.write('STM update\n')
 if smt_write() == False:
     sys.stderr.write(Color.RED + "NG" + Color.END + "\n")
     sys.exit(1)
 
 # ESPアップデート
-sys.stdout.write('ESPアップデート\n')
+sys.stdout.write('ESP update\n')
 if esp_write() == False:
     sys.stderr.write(Color.RED + "NG" + Color.END + "\n")
     sys.exit(1)
