@@ -182,11 +182,11 @@ for match_tuple in matched_ports:
     break
 #####################################################
 
-# STA設定
-sys.stdout.write('STA setting\n')
-if set_sta() == False:
-    sys.stderr.write(Color.RED + "NG" + Color.END + "\n")
-    sys.exit(1)
+# # STA設定
+# sys.stdout.write('STA setting\n')
+# if set_sta() == False:
+#     sys.stderr.write(Color.RED + "NG" + Color.END + "\n")
+#     sys.exit(1)
 
 # STMアップデート
 sys.stdout.write('STM update\n')
