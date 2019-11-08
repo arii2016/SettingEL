@@ -63,7 +63,7 @@ def set_sta():
 
 # STM書き込み
 def smt_write():
-    mot_path = "./data/EtcherGrbl_v1.0.5.mot"
+    mot_path = "./data/EtcherGrbl_v1.1.0.mot"
 
     # motファイルからデータ抽出
     (addr, data, start_addr) = convert.analyze_mot_file(mot_path)
@@ -117,7 +117,7 @@ def smt_write():
 
 # ESP書き込み
 def esp_write():
-    bin_path = "./data/etcherlaser_v1.0.5.bin"
+    bin_path = "./data/etcherlaser_v1.1.0.bin"
 
     f = open(bin_path, mode='rb')
     data = f.read()
