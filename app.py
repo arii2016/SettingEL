@@ -182,26 +182,26 @@ for match_tuple in matched_ports:
     break
 #####################################################
 
-# # STA設定
-# sys.stdout.write('STA setting\n')
-# if set_sta() == False:
+# STA設定
+sys.stdout.write('STA setting\n')
+if set_sta() == False:
+    sys.stderr.write(Color.RED + "NG" + Color.END + "\n")
+    sys.exit(1)
+
+# # STMアップデート
+# sys.stdout.write('STM update\n')
+# if smt_write() == False:
 #     sys.stderr.write(Color.RED + "NG" + Color.END + "\n")
 #     sys.exit(1)
 
-# STMアップデート
-sys.stdout.write('STM update\n')
-if smt_write() == False:
-    sys.stderr.write(Color.RED + "NG" + Color.END + "\n")
-    sys.exit(1)
+# # ESPアップデート
+# sys.stdout.write('ESP update\n')
+# if esp_write() == False:
+#     sys.stderr.write(Color.RED + "NG" + Color.END + "\n")
+#     sys.exit(1)
 
-# ESPアップデート
-sys.stdout.write('ESP update\n')
-if esp_write() == False:
-    sys.stderr.write(Color.RED + "NG" + Color.END + "\n")
-    sys.exit(1)
-
-# 再起動
-restart()
+# # 再起動
+# restart()
 
 sys.stdout.write(Color.GREEN + "OK" + Color.END + "\n")
 sys.exit(0)
