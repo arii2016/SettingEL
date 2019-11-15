@@ -291,16 +291,16 @@ root.geometry("{0}x{1}+0+0".format(root.winfo_screenwidth(), root.winfo_screenhe
 Fr_1 = Tkinter.Frame(root)
 Fr_1.pack(side='top', expand=True)
 
-Bt_SetSta = Tkinter.Button(Fr_1, text='Wifi設定', width=5, height=3, font=("", 24), command=set_sta_click, state="normal")
+Bt_SetSta = Tkinter.Button(Fr_1, text='Wifi設定', width=5, height=3, font=("", 20), command=set_sta_click, state="normal")
 Bt_SetSta.pack(side='left', expand=True)
 
-Bt_ClearSta = Tkinter.Button(Fr_1, text='Wifi削除', width=5, height=3, font=("", 24), command=clear_sta_click, state="normal")
+Bt_ClearSta = Tkinter.Button(Fr_1, text='Wifi削除', width=5, height=3, font=("", 20), command=clear_sta_click, state="normal")
 Bt_ClearSta.pack(side='left', expand=True)
 
 Fr_2 = Tkinter.Frame(root)
 Fr_2.pack(side='top', expand=True)
 
-Bt_Update = Tkinter.Button(Fr_2, text='アップデート', width=5, height=3, font=("", 24), command=update_click, state="normal")
+Bt_Update = Tkinter.Button(Fr_2, text='update', width=5, height=3, font=("", 20), command=update_click, state="normal")
 Bt_Update.pack(side='left', expand=True)
 
 root.mainloop()
